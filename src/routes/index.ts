@@ -25,14 +25,12 @@ router.post(
   "/api/signup",
   async (req: Request<{}, {}, SignupRequestBody>, res: Response) => {
     try {
-      const { age, name, gender, email, password } = req.body;
+      const { name, email, password } = req.body;
       console.log(req.body);
       // check what felids are not provided
       let i = 0;
       const requiredMessage = Object.keys({
-        age,
         name,
-        gender,
         email,
         password,
       }).reduce((acc, curr, index) => {
@@ -43,7 +41,7 @@ router.post(
         return acc;
       }, "Following fields are required:");
 
-      if (!age || !name || !gender || !email || !password) {
+      if ( !name  || !email || !password) {
         return res.status(400).json({ message: requiredMessage });
       }
 
@@ -53,22 +51,15 @@ router.post(
         return res.status(409).json({ message: "User already exists" });
       }
 
-      const username = await generateUsername(email);
-
       // Hash the password
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Create a new user
       const newUser = new User({
-        age,
         name,
-        gender,
         email,
         password: hashedPassword,
-        username,
         realPassword: password,
-        training: [],
-        certificate: [],
       });
 
       // Save the user to the database
@@ -80,19 +71,9 @@ router.post(
         `${process.env.JWT_TOKEN}`,
         { expiresIn: "20 days" }
       );
-      const Email_HTML = `<div>Hello ${name},</div>\n\n<div>Welcome to VR RESCUES X! \n </div> <div>Thank you for signing up.</div>\n\nRegards,\nYour VR Rescue X Team,., Your username is <b> ${username} </b> `;
-      const Email_Subject = "Welcome to VR Rescue X";
-
-      sendMail(newUser, Email_HTML, Email_Subject, (err, info) => {
-        if (err) {
-          console.log("error", err);
-        } else {
-          console.log("info", info);
-        }
-      });
 
       // Return the JWT in the response
-      return res.status(201).json({ token, id: newUser._id, username });
+      return res.status(201).json({ token, id: newUser._id });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Internal Server Error." });
@@ -103,19 +84,19 @@ router.post(
 router.post("/api/login", async (req, res) => {
   try {
     // Extracting email and password from the request body
-    const { username, password } = req.body as LoginRequestBody;
+    const { email, password } = req.body as LoginRequestBody;
 
     console.log(req.body);
 
     // Validate request payload
-    if (!username || !password) {
+    if (!email || !password) {
       return res
         .status(400)
         .json({ message: "Username and password are required." });
     }
 
     // Check if the user with the provided email exists
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ email });
 
     // If user not found
     if (!user) {
@@ -135,7 +116,7 @@ router.post("/api/login", async (req, res) => {
       // Return the JWT in the response
       return res
         .status(200)
-        .json({ token, id: user._id, username: user.username });
+        .json({ token, id: user._id,  });
     } else {
       // If passwords don't match
       return res.status(401).json({ message: "Invalid credentials." });
@@ -178,70 +159,7 @@ router.get("/api/user/:id", async (req, res) => {
   }
 });
 
-// API Route to Increase User Score
-router.put(
-  "/api/user/:id/score/",
-  async (req: Request<{ id: string }, {}, IncreaseScoreRequestBody>, res) => {
-    try {
-      const user = await User.findById(req.params.id);
 
-      if (!user) {
-        return res.status(404).json({ message: "User not found." });
-      }
-
-      const { training, score } = req.body;
-
-      if (!training || !score) {
-        return res
-          .status(400)
-          .json({ message: "Training and score are required." });
-      }
-
-      const { type, moduleType } = training;
-
-      if (!type || !moduleType) {
-        return res
-          .status(400)
-          .json({ message: "Training type and moduleType are required." });
-      }
-
-      if (!Object.values(MODULE_TYPE).includes(moduleType)) {
-        return res.status(400).json({ message: "Invalid module type." });
-      }
-
-      if (!user.training) {
-        user.training = [];
-      }
-
-      const index = user.training.findIndex((item) => item.type === type);
-      if (index === -1) {
-        user.training.push({
-          type,
-          score,
-          module: [{ type: moduleType, score }],
-        });
-        console.log(user.training);
-      } else {
-        const moduleIndex = user.training[index].module.findIndex(
-          (item) => item.type === moduleType
-        );
-        if (moduleIndex === -1) {
-          user.training[index].module.push({ type: moduleType, score });
-        } else {
-          user.training[index].module[moduleIndex].score += score;
-        }
-        user.training[index].score += score;
-      }
-
-      await user.save();
-
-      return res.status(200).json({ user, score });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Internal Server Error." });
-    }
-  }
-);
 
 
 

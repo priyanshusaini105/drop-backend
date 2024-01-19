@@ -60,7 +60,7 @@ app.listen(port, () => {
 
 
 export type LoginRequestBody = {
-  username: string;
+  email: string;
   password: string;
 };
 
@@ -76,14 +76,7 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
-  age: number;
-  gender: string;
-  username: string;
   realPassword: string; // 😜
-  createdAt?: Date;
-  updatedAt?: Date;
-  training?: IGame[];
-  certificates: mongoose.Types.ObjectId[];
 }
 
 export interface Certificate extends Document {
