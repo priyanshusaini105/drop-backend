@@ -1348,4 +1348,6 @@ const filterAndMapResults = (productResult: ProductInfo[]): ProductInfo[] => {
   });
 };
 
+
+
 export default productRouter;

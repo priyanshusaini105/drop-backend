@@ -7,7 +7,7 @@ require("dotenv").config();
 // require('../db/connect')
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3002;
 
 import mongoose, { ObjectId } from "mongoose";
 import searchRouter from "./routes/search";
@@ -32,8 +32,9 @@ import productRouter from "./routes/product";
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
 app.use(router);
-// app.use(searchRouter);
+app.use(searchRouter);
 app.use(productRouter)
+
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
