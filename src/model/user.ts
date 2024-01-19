@@ -1,10 +1,8 @@
-import { ObjectId } from 'mongoose';
-import { Schema, Document, model, Error } from 'mongoose';
-import bcrypt from 'bcrypt';
-import { IUser } from '../app';
-import uid from 'uid-safe';
-
-
+import { ObjectId } from "mongoose";
+import { Schema, Document, model, Error } from "mongoose";
+import bcrypt from "bcrypt";
+import { IUser } from "../app";
+import uid from "uid-safe";
 
 const userSchema = new Schema<IUser>({
   name: {
@@ -25,7 +23,23 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: true,
   },
-})
+  pinned: {
+    type: [
+      {
+        id: {
+          type: String,
+          required: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
+    default: [],
+    required: false,
+  },
+});
 
 // Hash the password before saving to the database
 // userSchema.pre('save', async function (next) {
@@ -38,5 +52,4 @@ const userSchema = new Schema<IUser>({
 //   }
 // });
 
-export const User = model<IUser>('User', userSchema);
-
+export const User = model<IUser>("User", userSchema);

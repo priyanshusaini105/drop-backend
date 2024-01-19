@@ -3,6 +3,10 @@
 import express from "express";
 import { getJson } from "serpapi";
 import { ProductInfo } from "../types";
+import jwt from "jsonwebtoken";
+import { User } from "../model";
+import { PinnedModel } from "../model/pinned";
+import { sendMail } from "../services/email";
 
 const productRouter = express.Router();
 const allowedDomains = [
@@ -1348,6 +1352,107 @@ const filterAndMapResults = (productResult: ProductInfo[]): ProductInfo[] => {
   });
 };
 
+productRouter.post("/pin", async (req, res) => {
+  try {
+    //check user is logged in
+    const token = req.headers.authorization;
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const decodedToken = jwt.verify(
+      token,
+      process.env.JWT_SECRET ?? ""
+    ) as jwt.JwtPayload;
+    if (!decodedToken) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const userId = decodedToken.userId;
+    console.log(userId);
 
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const url = req.body.url as string | undefined;
+    const price = req.body.price as number | undefined;
+    if (!url) {
+      return res.status(400).json({ message: "Pin is required" });
+    }
+
+    user.pinned.push({
+      id: url,
+      price: 0,
+    });
+
+    user.save();
+
+    const isAlreadyPinned = await PinnedModel.findOne({ productId: url });
+
+    if (isAlreadyPinned) {
+      isAlreadyPinned.userId.push(userId);
+      isAlreadyPinned.save();
+      res.status(200).json({ pinned: true });
+      return;
+    }
+    const pinned = new PinnedModel({
+      productId: url,
+      userId: [userId],
+    });
+
+    pinned.save();
+
+    res.status(200).json({ pinned: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+productRouter.post("/price-change", async (req, res) => {
+  try {
+    const pinned = await PinnedModel.find();
+
+    const latestPrices = req.body.data as
+      | { url: string; data: { price: number; time: number } }[]
+      | undefined;
+
+    if (!latestPrices) {
+      return res.status(400).json({ message: "data is required" });
+    }
+
+    latestPrices.forEach(async (item) => {
+      const url = item.url;
+      const price = item.data.price;
+      const pinnedItems = pinned.filter((item) => item.productId === url);
+      if (!pinnedItems) {
+        return;
+      }
+      pinnedItems.forEach((pinnedItem) => {
+        pinnedItem.userId.forEach(async (userId) => {
+          const user = await User.findById(userId);
+          if (!user) {
+            return;
+          }
+          sendMail(
+            user,
+            `<p>Price of ${url} has changed to ${price}</p>`,
+            "Price Change",
+            (err, info) => {
+              if (err) {
+                console.error(err);
+              } else {
+                console.log(info);
+              }
+            }
+          );
+        });
+      });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
 
 export default productRouter;

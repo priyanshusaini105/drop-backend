@@ -7,4 +7,4 @@ const pdfSchema = new Schema<Extension>({
     user: { type: Schema.Types.ObjectId, ref: "User" },
 });
 
-export const ExtensionModel = model<Extension>("certificates", pdfSchema);
+export const ExtensionModel = model<Extension>("Extension", pdfSchema);

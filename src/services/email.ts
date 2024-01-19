@@ -16,7 +16,7 @@ export const sendMail=(user:IUser,html:string,subject:string,callback:(err: Erro
   const mailOptions = {
     from:process.env.EMAIL, 
     to: user.email,
-    subject: 'Welcome to VR Rescue X App!',
+    subject: 'Hurray Price is changed to your alert!',
     html
   };
 

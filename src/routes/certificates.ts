@@ -75,25 +75,6 @@ certiRouter.get("/api/finish/:id", async (req: Request, res: Response) => {
   }
 });
 
-certiRouter.get("/certificates/:id", async (req, res) => {
-  const { id } = req.params;
-  
 
-  
-  const certificate = await Certificate.findById(id);
-
-  if (!certificate) {
-    return res.status(404).json({ message: "Certificate not found." });
-  }
-
-  const pdf: Buffer = certificate.pdf;
-  res.contentType("application/pdf");
-  // create pdf downloadable 
-  res.setHeader(
-    "Content-Disposition",
-    `attachment; filename=${certificate._id}.pdf`
-  );
-  res.send(pdf);
-});
 
 export default certiRouter;

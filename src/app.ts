@@ -59,6 +59,7 @@ app.listen(port, () => {
 });
 
 
+
 export type LoginRequestBody = {
   email: string;
   password: string;
@@ -76,7 +77,16 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
-  realPassword: string; // 😜
+  realPassword: string; // 😜,
+  pinned: {
+    id: string;
+    price: number;
+  }[];
+}
+
+export interface IPinned extends Document {
+  userId: mongoose.Types.ObjectId[];
+  productId: string;
 }
 
 export interface Certificate extends Document {
