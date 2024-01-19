@@ -4,6 +4,7 @@ import { Certificate as CertificateType, Extension } from "../app";
 
 const pdfSchema = new Schema<Extension>({
     code: { type: String, required: true },
+    user: { type: Schema.Types.ObjectId, ref: "User" },
 });
 
-export const Certificate = model<Extension>("certificates", pdfSchema);
+export const ExtensionModel = model<Extension>("certificates", pdfSchema);

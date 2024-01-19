@@ -12,28 +12,30 @@ const port = process.env.PORT || 3002;
 import mongoose, { ObjectId } from "mongoose";
 import searchRouter from "./routes/search";
 import productRouter from "./routes/product";
-// const dbUrl = process.env.DB_URL;
+import { extensionRouter } from "./routes/extension";
+const dbUrl = process.env.DB_URL;
 
-// if (dbUrl) {
-//   const connectToMongoDB = async () => {
-//     try {
-//       await mongoose.connect(dbUrl, {});
-//       console.log("Connected to MongoDB");
-//     } catch (error) {
-//       console.error("Failed to connect to MongoDB", error);
-//     }
-//   };
+if (dbUrl) {
+  const connectToMongoDB = async () => {
+    try {
+      await mongoose.connect(dbUrl, {});
+      console.log("Connected to MongoDB");
+    } catch (error) {
+      console.error("Failed to connect to MongoDB", error);
+    }
+  };
 
-//   connectToMongoDB();
-// } else {
-//   console.error("DB_URL is undefined");
-// }
+  connectToMongoDB();
+} else {
+  console.error("DB_URL is undefined");
+}
 
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
 app.use(router);
 app.use(searchRouter);
 app.use(productRouter)
+app.use(extensionRouter)
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -87,6 +89,11 @@ export interface IUser extends Document {
 export interface Certificate extends Document {
   html: string;
   pdf: Buffer;
+}
+
+export interface Extension extends Document {
+  code: string;
+  user: mongoose.Types.ObjectId;
 }
 
 export interface IGame {

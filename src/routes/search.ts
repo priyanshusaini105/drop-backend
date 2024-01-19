@@ -11,4 +11,6 @@ searchRouter.get("/autocomplete/:id", async (req, res) => {
     res.status(200).json({data:data[1]}); 
 })
 
+
+
 export default searchRouter;
