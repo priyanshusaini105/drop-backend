@@ -1317,6 +1317,8 @@ productRouter.get("/search", async (req, res) => {
     // const productResult = await fetchProductResults(formattedQuery);
     const productRes = resu.item;
 
+    // console.log( await fetchProductResults(query+' site:pricehistoryapp.com'))
+
     const responseData = filterAndMapResults(resu.item as ProductInfo[]);
     res.status(200).json({ item: responseData });
   } catch (error) {
@@ -1333,17 +1335,18 @@ const formatQuery = (query: string): string => {
   );
 };
 
-// const fetchProductResults = async (formattedQuery: string) => {
-//   return await getJson({
-//     q: formattedQuery,
-//     location: LOCATION,
-//     google_domain: "google.co.in",
-//     api_key: process.env.SERPAPI_API,
-//     engine: "google_shopping",
-//     gl: "in",
-//     hl: "en",
-//   }) as { shopping_results: ProductInfo[] };
-// };
+const fetchProductResults = async (formattedQuery: string) => {
+  return await getJson({
+    q: formattedQuery,
+    location: LOCATION,
+    google_domain: "google.co.in",
+    api_key: process.env.SERPAPI_API,
+    engine: "google_shopping",
+    gl: "in",
+    hl: "en",
+    site:'pricehistoryapp.com'
+  }) as { shopping_results: ProductInfo[] };
+};
 
 const filterAndMapResults = (productResult: ProductInfo[]): ProductInfo[] => {
   return productResult.filter((item) => {
@@ -1354,20 +1357,24 @@ const filterAndMapResults = (productResult: ProductInfo[]): ProductInfo[] => {
 
 productRouter.post("/pin", async (req, res) => {
   try {
+    let userId= req.body.userId;
     //check user is logged in
-    const token = req.headers.authorization;
-    if (!token) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    const decodedToken = jwt.verify(
-      token,
-      process.env.JWT_SECRET ?? ""
-    ) as jwt.JwtPayload;
-    if (!decodedToken) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    const userId = decodedToken.userId;
+    // const token = req.headers.authorization;
+    // if (!token) {
+    //   return res.status(401).json({ message: "Unauthorized" });
+    // }
+    // const decodedToken = jwt.verify(
+    //   token,
+    //   process.env.JWT_SECRET ?? ""
+    // ) as jwt.JwtPayload;
+    // if (!decodedToken) {
+    //   return res.status(401).json({ message: "Unauthorized" });
+    // }
+    // const userId = decodedToken.userId;
     console.log(userId);
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
     const user = await User.findById(userId);
     if (!user) {

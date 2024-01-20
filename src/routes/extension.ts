@@ -36,7 +36,7 @@ extensionRouter.get("/get-extension", async (req, res) => {
     res.status(200).json({ data: uid });
 });
 
-extensionRouter.post("/extension/verify/", async (req, res) => {
+extensionRouter.post("/extension/verify", async (req, res) => {
     const code = req.body.code;
 
     const extension = await ExtensionModel.findOne({ code });
