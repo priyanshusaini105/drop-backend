@@ -44,5 +44,5 @@ extensionRouter.post("/extension/verify", async (req, res) => {
         return res.status(404).json({ message: "Extension not found." ,verify:false});
     }
 
-    res.status(200).json({ message: "Extension verified successfully.",verify:true });
+    res.status(200).json({ message: "Extension verified successfully.",verify:true,user:extension.user });
 });
